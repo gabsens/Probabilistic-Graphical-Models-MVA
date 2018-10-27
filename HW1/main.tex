@@ -1,0 +1,302 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{listings}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,textcomp}
+\usepackage[utf8]{inputenc}  
+\usepackage[T1]{fontenc}  
+\usepackage{ listings }
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{stmaryrd}
+\usepackage{bbm}
+\usepackage{bm}
+\usepackage{xcolor}
+\usepackage{subfig}
+\usepackage{caption}
+\graphicspath{ {images/} }
+
+\usepackage{geometry}
+\geometry{total={210mm,297mm},
+left=15mm,right=15mm,%
+bindingoffset=0mm, top=10mm,bottom=15mm}
+
+\usepackage{etoolbox}
+\makeatletter
+\preto{\@verbatim}{\topsep=0pt \partopsep=3pt }
+\makeatother
+
+\linespread{1}
+
+\newcommand{\linia}{\rule{\linewidth}{0.5pt}}
+
+
+% my own titles
+\makeatletter
+\renewcommand{\maketitle}{
+\begin{center}
+\vspace{2ex}
+{\huge \textsc{\@title}}
+\vspace{1ex}
+\\
+\linia\\
+\@author 
+\vspace{4ex}
+\end{center}
+}
+\makeatother
+%%%
+
+% custom footers and headers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+
+\cfoot{}
+\rfoot{Page \thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+%
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\tr}{tr}
+
+%%%----------%%%----------%%%----------%%%----------%%%
+
+\begin{document}
+\noindent Gabriel Romon
+\section*{Exercise 1}
+All computational details and further arguments are deferred to Page 5.
+Let $(z_1,x_1),\ldots,(z_n,x_n)$ be an i.i.d sample from $(z,x)$.
+The log-likelihood is given by $\displaystyle \sum_{m=1}^M \log \pi_m \sum_{i=1}^n \mathbbm 1_{z_i=m} + \sum_{m=1}^M \sum_{k=1}^K \log \theta_{mk} \sum_{i=1}^n \mathbbm 1_{z_i=m}\mathbbm 1_{x_i=k}$.
+Since $\sup_{x,y}(f(x)+g(y)) = \sup_x f(x) + \sup_y g(y)$, both summands in the previous equation can be maximized separately. Let $n_m=\sum_{i=1}^n \mathbbm 1_{z_i=m}$ and $n_{mk}=\sum_{i=1}^n \mathbbm 1_{z_i=m}\mathbbm 1_{x_i=k}$.\newline \newline
+The first problem is $\max_{\pi} \sum_{m=1}^M n_m\log \pi_m \text{ s.t. } \sum_{m=1}^M \pi_m = 1$. It is amenable to Lagrange multipliers. Computations show that \fbox{$\pi_m = \frac{n_m}n$} is optimal. \newline
+The second problem is $\max_{\theta_{mk}} \sum_{m=1}^M \sum_{k=1}^K n_{mk}\log \theta_{mk} \text{ s.t. } \forall m, \sum_{k=1}^K \theta_{mk} = 1$. This can also be solved using Lagrange multipliers. The optimum is given by \fbox{$\theta_{mk} = \frac{n_{mk}}{n_m}$}.
+
+\section*{LDA}
+All computational details and further arguments are deferred to Page 5. Let $(y_1,x_1),\ldots,(y_n,x_n)$ be an i.i.d sample from $(y,x)$, $n_1=|\{i, y_i=1\}|$ and $n_0=n-n_1$. The log-likelihood of the model is $$\ell(\mu_0,\mu_1,\Sigma,\pi|y_i,x_i) = \begin{aligned}[t]&-\frac n2 \log((2\pi)^d)+ \color{red}{n_1\log \pi +(n-n_1)\log(1-\pi)}\\ &\color{blue}{-\frac n2 \log |\Sigma| -\frac 12 \left( \sum_{\substack{i\\y_i=1}}(x_i-\mu_1)^T\Sigma^{-1}(x_i-\mu_1) + \sum_{\substack{i\\y_i=0}}(x_i-\mu_0)^T\Sigma^{-1}(x_i-\mu_0)\right)}\end{aligned}$$
+which may be maximized separately in $\pi$ and $(\mu_0,\mu_1,\Sigma)$. Computations show that the optimal parameters are $$\begin{cases}
+  \pi = \frac{n_1}n\quad \quad \quad \quad\mu_1= \frac{1}{n_1}\sum_{i,y_i=1} x_i \quad \quad \quad \quad \mu_0 = \frac{1}{n_0}\sum_{i,y_i=0} x_i\\
+  \Sigma = \frac 1n\left(\sum_{i,y_i=1} (x_i-\mu_1)(x_i-\mu_1)^T+\sum_{i,y_i=0} (x_i-\mu_0)(x_i-\mu_0)^T \right)
+\end{cases}$$
+Using Bayes' theorem and a bit of algebra, $$P(y=1|x)=\sigma\bigg(x^T\underbrace{\Sigma^{-1}(\mu_1-\mu_0)}_{\beta} + \underbrace{\frac12(\mu_1+\mu_0)^T\Sigma^{-1}(\mu_0-\mu_1)+\log \frac{\pi}{1-\pi}}_{\gamma}\bigg)$$
+
+\section*{QDA}
+All computational details and further arguments are deferred to Page 7. Let $(y_1,x_1),\ldots,(y_n,x_n)$ be an i.i.d sample from $(y,x)$, $n_1=|\{i, y_i=1\}|$ and $n_0=n-n_1$. The log-likelihood of the model is $$\begin{aligned}[t]\ell(\mu_0,\mu_1,\Sigma_0,\Sigma_1,\pi&|y_i,x_i) = -\frac n2 \log((2\pi)^d)+ n_1\log \pi +(n-n_1)\log(1-\pi)\\ &-\frac {n_1}2 \log |\Sigma_1|-\frac {n_0}2 \log |\Sigma_0| -\frac 12 \left( \sum_{\substack{i\\y_i=1}}(x_i-\mu_1)^T\Sigma_1^{-1}(x_i-\mu_1) + \sum_{\substack{i\\y_i=0}}(x_i-\mu_0)^T\Sigma_0^{-1}(x_i-\mu_0)\right)\end{aligned}$$
+Computations show that the optimal parameters are $$\begin{cases}
+  \pi = \frac{n_1}n\quad \quad \quad \quad\mu_1= \frac{1}{n_1}\sum_{i,y_i=1} x_i \quad \quad \quad \quad \mu_0 = \frac{1}{n_0}\sum_{i,y_i=0} x_i\\
+  \Sigma_1 = \frac 1{n_1}\left(\sum_{i,y_i=1} (x_i-\mu_1)(x_i-\mu_1)^T \right) \quad \quad \Sigma_0 = \frac 1{n_0}\left(\sum_{i,y_i=0} (x_i-\mu_0)(x_i-\mu_0)^T \right)
+\end{cases}$$
+Using Bayes' theorem and a bit of algebra, $$\begin{aligned}P(y=1|x)=\sigma\bigg(&
+\frac 12 x^T(\color{blue}{\Sigma_0^{-1}-\Sigma_1^{-1}}\color{black})x + x^T(\color{orange}{\Sigma_1^{-1}\mu_1-\Sigma_0^{-1}\mu_0}\color{black})\\&+\color{teal}{\log\frac{\pi}{1-\pi}+\frac 12 \left[\mu_0^T\Sigma_0^{-1}\mu_0 - \mu_1^T\Sigma_1^{-1}\mu_1 + \log |\Sigma_0| - \log |\Sigma_1|\right]}
+\color{black}\bigg)\end{aligned}$$
+
+\newpage
+\section*{Dataset A}
+All the plots were done on the \textbf{training set}.
+\begin{figure}[h!]
+\centering
+\begin{tabular}{cc}
+  \includegraphics[width=85mm]{A_lda.eps} &   \includegraphics[width=85mm]{A_log.eps} \\
+LDA & Logistic regression \\[6pt]
+ \includegraphics[width=85mm]{A_lin.eps} &   \includegraphics[width=85mm]{A_qda.eps} \\
+Linear regression & QDA \\[6pt]
+\end{tabular}
+\end{figure}
+
+\begin{minipage}{0.4\textwidth}
+\hfill\newline \newline \newline \newline 
+\centering
+\begin{tabular}{|c||c|c|} \hline
+& Train & Test  \\ \hline
+LDA &
+\begin{tabular}{c} 1.33
+\end{tabular} &
+\begin{tabular}{c} 2.00
+\end{tabular} \\ \hline
+Logistic &
+\begin{tabular}{c} 0.00
+\end{tabular} &
+\begin{tabular}{c} 3.27
+\end{tabular} \\ \hline
+Linear &
+\begin{tabular}{c} 1.33 
+\end{tabular} &
+\begin{tabular}{c} 2.07
+\end{tabular} \\ \hline
+QDA &
+\begin{tabular}{c} 0.67
+\end{tabular} &
+\begin{tabular}{c} 2.00
+\end{tabular} \\ \hline
+\end{tabular}
+\captionof{table}{Missclassification rates (\%) on the training and test sets for Dataset A}
+\end{minipage}\hfill
+\begin{minipage}{0.55\textwidth}
+$\bullet$ The training data is made up of two parallel clusters with similar densities. All four methods yield satisfactory results. LDA, Linear regression and QDA exhibit similar performance on the training and test sets, while Logistic regression seems to overfit: it has perfect accuracy on the training set but performs worst on the test set. \newline
+$\bullet$ Because the training set is linearly separable, it can be shown that the log-loss can be made arbitrarily small by taking $w$ with large norm. This is the reason for the numeric instability we have observed. Our stopping criterion for the IRLS algorithm is to stop as soon as the model classifies every point of the training set correctly. \newline
+$\bullet$ In this linearly separable case, we have observed that the performance of the IRLS method depends greatly on the initialization.
+\end{minipage}
+
+
+\newpage
+\section*{Dataset B}
+All the plots were done on the \textbf{training set}.
+\begin{figure}[h!]
+\centering
+\begin{tabular}{cc}
+  \includegraphics[width=85mm]{B_lda.eps} &   \includegraphics[width=85mm]{B_log.eps} \\
+LDA & Logistic regression \\[6pt]
+ \includegraphics[width=85mm]{B_lin.eps} &   \includegraphics[width=85mm]{B_qda.eps} \\
+Linear regression & QDA \\[6pt]
+\end{tabular}
+\end{figure}
+
+\begin{minipage}{0.4\textwidth}
+\hfill\newline \newline \newline \newline 
+\centering
+\begin{tabular}{|c||c|c|} \hline
+& Train & Test  \\ \hline
+LDA &
+\begin{tabular}{c} 3.00
+\end{tabular} &
+\begin{tabular}{c} 4.15
+\end{tabular} \\ \hline
+Logistic &
+\begin{tabular}{c} 2.00
+\end{tabular} &
+\begin{tabular}{c} 4.30
+\end{tabular} \\ \hline
+Linear &
+\begin{tabular}{c} 3.00
+\end{tabular} &
+\begin{tabular}{c} 4.15
+\end{tabular} \\ \hline
+QDA &
+\begin{tabular}{c} 1.33
+\end{tabular} &
+\begin{tabular}{c} 2.00
+\end{tabular} \\ \hline
+\end{tabular}
+\captionof{table}{Missclassification rates (\%) on the training and test sets for Dataset B}
+\end{minipage}\hfill
+\begin{minipage}{0.55\textwidth}
+$\bullet$ The training data is made up of two orthogonal clusters with different densities. All four methods yield satisfactory results. LDA, Logistic and Linear regression exhibit similar performance on the training set, while QDA performs better on both sets. \newline
+$\bullet$ QDA takes into account the distinct cluster densities because it models the data with two different covariance matrices, hence the better accuracy. \newline
+$\bullet$ Besides, the curvature of the ellipsoid makes it easier for QDA to discriminate between the two classes, compared to the other three models with linear decision boundaries.
+\end{minipage}
+
+
+\newpage
+\section*{Dataset C}
+All the plots were done on the \textbf{training set}.
+\begin{figure}[h!]
+\centering
+\begin{tabular}{cc}
+  \includegraphics[width=85mm]{C_lda.eps} &   \includegraphics[width=85mm]{C_log.eps} \\
+LDA & Logistic regression \\[6pt]
+ \includegraphics[width=85mm]{C_lin.eps} &   \includegraphics[width=85mm]{C_qda.eps} \\
+Linear regression & QDA \\[6pt]
+\end{tabular}
+\end{figure}
+
+\begin{minipage}{0.4\textwidth}
+\hfill\newline \newline \newline \newline 
+\centering
+\begin{tabular}{|c||c|c|} \hline
+& Train & Test  \\ \hline
+LDA &
+\begin{tabular}{c} 5.50
+\end{tabular} &
+\begin{tabular}{c} 4.23
+\end{tabular} \\ \hline
+Logistic &
+\begin{tabular}{c} 4.00
+\end{tabular} &
+\begin{tabular}{c} 2.27
+\end{tabular} \\ \hline
+Linear &
+\begin{tabular}{c} 5.50
+\end{tabular} &
+\begin{tabular}{c} 4.23
+\end{tabular} \\ \hline
+QDA &
+\begin{tabular}{c} 5.25
+\end{tabular} &
+\begin{tabular}{c} 3.83
+\end{tabular} \\ \hline
+\end{tabular}
+\captionof{table}{Missclassification rates (\%) on the training and test sets for Dataset C}
+\end{minipage}\hfill
+\begin{minipage}{0.55\textwidth}
+$\bullet$ A cluster of $1$'s has been added to the previous training set. The points with label $1$ should therefore be considered as the result of a mixture of two Gaussians with different centers and covariances. LDA and QDA hypothesise that these points originate from exactly one Gaussian, hence their poor performance on this dataset.  \newline
+$\bullet$ On the contrary, Logistic Regression performs better than the others. That is because it does not try to model the $x$'s (it is a discriminative model, not a generative one).
+\end{minipage}
+
+
+
+\newpage
+\section*{Exercise 1}
+Here's a more detailed solution with all the arguments fleshed out.\newline
+For the conditional probability $P(x=k|z=m)$ to be well-defined, one must assume that $\forall m\in \llbracket1,M\rrbracket, \pi_m>0$. Let $(z_1,x_1),\ldots,(z_n,x_n)$ be an i.i.d sample from $(z,x)$. The likelihood of the model may be written as 
+$$\begin{aligned}
+  L(\pi,\theta|z_i,x_i) &= \prod_{i=1}^n P(z=z_i\cap x=x_i) = \prod_{i=1}^n P(z=z_i)P(x=x_i|z=z_i)\\
+  &= \prod_{i=1}^n \prod_{m=1}^M\pi_m^{\mathbbm 1_{z_i=m}} \prod_{i=1}^n \prod_{m=1}^M\prod_{k=1}^K \theta_{mk}^{\mathbbm 1_{z_i=m} \mathbbm 1_{x_i=k}}
+\end{aligned}$$
+Let $A=\{(m,k)\in \llbracket1,M\rrbracket \times \llbracket1,K\rrbracket, \sum_{i=1}^n (\mathbbm 1_{z_i=m} \mathbbm 1_{x_i=k}) >0\}$. If $(m,k)\notin A$, $\theta_{mk}$ does not appear in the likelihood, \textbf{so we may set} $\bm{\theta_{mk} =0}$. If $(m,k)\in A$ and $\theta_{mk}=0$, then the likelihood is $0$. Thus we might restrict ourselves to $(m,k)\in A$ and $\theta_{mk}>0$.
+
+\noindent The log-likelihood is well-defined and given by $\displaystyle \sum_{m=1}^M \log \pi_m \sum_{i=1}^n \mathbbm 1_{z_i=m} + \sum_{(m,k)\in A} \log \theta_{mk} \sum_{i=1}^n \mathbbm 1_{z_i=m}\mathbbm 1_{x_i=k}$.
+Since the objective and the constraints are separable in $\pi$ and $\theta$, both summands in the previous equation can be maximized separately. Let $n_m=\sum_{i=1}^n \mathbbm 1_{z_i=m}$ and $n_{mk}=\sum_{i=1}^n \mathbbm 1_{z_i=m}\mathbbm 1_{x_i=k}$.\\
+
+\noindent $\bullet$ The first problem is $\max_{\pi} \sum_{m=1}^M n_m\log \pi_m \text{ s.t. } \sum_{m=1}^M \pi_m = 1$. Since the objective is concave and the constraint is affine, KKT conditions yield solutions that are primal and dual optimal (see \textit{KKT conditions for convex problems} p.244 in Boyd's book). Thus, it suffices to find a solution of $\begin{cases}
+  \forall m, \pi_m\in (0,1] \\
+  \forall m, \frac{n_m}{\pi_m} + \lambda = 0 \\
+  \sum_{m=1}^M \pi_m = 1
+\end{cases}$\newline
+ If one of the $n_m$ is $0$, the system has no solutions. Otherwise, $n_m = -\lambda \pi_m$, hence $n=\sum_{m=1}^Mn_m=-\lambda$, yielding \fbox{$\pi_m= \frac{n_m}n$}.\\
+
+\noindent $\bullet$ The second problem is $\displaystyle \max_{\substack{\theta_{mk}\\ (m,k)\in A}} \sum_{(m,k)\in A} n_{mk}\log \theta_{mk} \text{ s.t. } \forall m, \sum_{k=1}^K \theta_{mk} = 1$. Here too KKT conditions are sufficient. It suffices to find a solution of $\begin{cases}
+  \forall (m,k)\in A, \theta_{mk}\in (0,1] \\
+  \forall (m,k)\in A, \frac{n_{mk}}{\theta_{mk}} + \lambda_m = 0 \\
+  \forall m, \sum_{k=1}^K \theta_{mk}= 1
+\end{cases}$. \newline
+By definition of $A$, all the $(n_{mk})_{(m,k)\in A}$ are $>0$. $n_{mk} = -\lambda_m \theta_{mk}$ hence $n_m = \sum_{k=1}^K n_{mk} = -\lambda_m$. Thus a solution is $\theta_{mk} = \frac{n_{mk}}{n_m}$ if $(m,k)\in A$ and $0$ otherwise, which, by definition of $A$, rewrites more compactly as $$\boxed{\forall (m,k)\in\llbracket1,M\rrbracket\times \llbracket1,K\rrbracket, \theta_{mk} = \frac{n_{mk}}{n_m}}$$
+
+\section*{LDA}
+$\bullet$ Let $N$ be the counting measure with respect to $\{0,1\}$. By Bayes' theorem, the joint density of $(y,x)$ with respect to $N\otimes \lambda_d$ is $$f_{y,x}(i,a) = f_{y}(i)f_{x|y=i}(a) = \pi^{i}{(1-\pi)}^{1-i}\frac{1}{((2\pi)^d|\Sigma|)^{1/2}} \exp(-\frac12 (a-\mu_i)^T\Sigma^{-1}(a-\mu_i))$$ 
+
+\noindent Let $(y_1,x_1),\ldots,(y_n,x_n)$ be an i.i.d sample from $(y,x)$. The likelihood of the model is $$\hspace{-0.7cm}\begin{aligned}
+  L(\mu_0,\mu_1,\Sigma,\pi|y_i,x_i) &= \frac{1}{((2\pi)^d|\Sigma|)^{n/2}}\prod_{\substack{i\\y_i=1}}^n \pi\exp(-\frac12 (x_i-\mu_1)^T\Sigma^{-1}(x_i-\mu_1))\prod_{\substack{i\\y_i=0}}^n (1-\pi)\exp(-\frac12 (x_i-\mu_0)^T\Sigma^{-1}(x_i-\mu_0))\\
+  &= \frac{\pi^{n_1}(1-\pi)^{n-n_1}}{((2\pi)^d|\Sigma|)^{n/2}}\prod_{\substack{i\\y_i=1}} \pi\exp(-\frac12 (x_i-\mu_1)^T\Sigma^{-1}(x_i-\mu_1))\prod_{\substack{i\\y_i=0}}(1-\pi)\exp(-\frac12 (x_i-\mu_0)^T\Sigma^{-1}(x_i-\mu_0))
+\end{aligned}$$
+$\bullet$ The log-likelihood of the model is $$\ell(\mu_0,\mu_1,\Sigma,\pi|y_i,x_i) = \begin{aligned}[t]&-\frac n2 \log((2\pi)^d)+ \color{red}{n_1\log \pi +(n-n_1)\log(1-\pi)}\\ &\color{blue}{-\frac n2 \log |\Sigma| -\frac 12 \left( \sum_{\substack{i\\y_i=1}}(x_i-\mu_1)^T\Sigma^{-1}(x_i-\mu_1) + \sum_{\substack{i\\y_i=0}}(x_i-\mu_0)^T\Sigma^{-1}(x_i-\mu_0)\right)}\end{aligned}$$
+which may be maximized separately in $\pi$ and $(\mu_0,\mu_1,\Sigma)$.\\
+
+\noindent$\bullet$ $\pi \mapsto n_1\log \pi +(n-n_1)\log(1-\pi)$ may be optimized simply by looking at its derivative: the maximum occurs at $\pi = \frac{n_1}n\in [0,1]$ \newline
+$\bullet$ $\displaystyle (\mu_0,\mu_1,\Sigma)\mapsto n \log |\Sigma| + \left( \sum_{\substack{i\\y_i=1}}(x_i-\mu_1)^T\Sigma^{-1}(x_i-\mu_1) + \sum_{\substack{i\\y_i=0}}(x_i-\mu_0)^T\Sigma^{-1}(x_i-\mu_0)\right)$ is to be minimized. For fixed $\Sigma$, the function $\mu\mapsto (x-\mu)^T\Sigma^{-1}(x-\mu)$ has Hessian $\Sigma^{-1} \in S_d^{+}(\mathbb R)$ and is thus convex. The previous function is consequently convex in $(\mu_0,\mu_1)$ as the separable sum of two convex functions. The gradient of $\mu\mapsto (x-\mu)^T\Sigma^{-1}(x-\mu)$ is $-2\Sigma^{-1}(x-\mu)$, hence equating the gradient with respect to $\mu_1$ to $0$ yields $\displaystyle \sum_{\substack{i\\y_i=1}} (-2\Sigma^{-1}(x_i-\mu_1)) = 0$, that is $\displaystyle \Sigma^{-1}\sum_{\substack{i\\y_i=1}} (x_i-\mu_1)=0$ and since $\Sigma$ is invertible, $\displaystyle \boxed{\mu_1 = \frac{1}{n_1}\sum_{\substack{i\\y_i=1}} x_i}$ and similarly $\displaystyle \boxed{\mu_0 = \frac{1}{n_0}\sum_{\substack{i\\y_i=0}} x_i}$. \newline
+For these values of $\mu_0$ and $\mu_1$, we're left with minimizing $$\displaystyle \Sigma\mapsto n \log |\Sigma| + \left( \sum_{\substack{i\\y_i=1}}(x_i-\mu_1)^T\Sigma^{-1}(x_i-\mu_1) + \sum_{\substack{i\\y_i=0}}(x_i-\mu_0)^T\Sigma^{-1}(x_i-\mu_0)\right)\quad \quad (*)$$ By the change of variable $\Delta = \Sigma^{-1}$ this turns into $$\displaystyle \Delta\mapsto -n \log |\Delta| + \left( \sum_{\substack{i\\y_i=1}}(x_i-\mu_1)^T\Delta(x_i-\mu_1) + \sum_{\substack{i\\y_i=0}}(x_i-\mu_0)^T\Delta(x_i-\mu_0)\right)$$
+It is well-known that $\Delta\mapsto \log|\Delta|$ is concave with gradient $\Delta^{-1}$ and since $$\begin{aligned}
+  (x-\mu)^T\Delta(x-\mu) &= \tr ((x-\mu)^T\Delta(x-\mu)) = \tr(\Delta(x-\mu)(x-\mu)^T))\\
+  &= \langle \Delta,(x-\mu)(x-\mu)^T \rangle \quad \text{where } \langle \cdot,\cdot \rangle \text{ is Frobenius inner product,}
+\end{aligned}$$ the gradient of $\Delta \mapsto (x-\mu)^T\Delta(x-\mu)$ is $(x-\mu)(x-\mu)^T$. Consequently, a critical point for the previous function of $\Delta$ is such that $\displaystyle -n\Delta^{-1} + \left( \sum_{\substack{i\\y_i=1}}(x_i-\mu_1)(x_i-\mu_1)^T + \sum_{\substack{i\\y_i=0}}(x_i-\mu_0)(x_i-\mu_0)^T\right)=0$, hence $$\Delta^{-1} = \frac 1n\left( \sum_{\substack{i\\y_i=1}}(x_i-\mu_1)(x_i-\mu_1)^T + \sum_{\substack{i\\y_i=0}}(x_i-\mu_0)(x_i-\mu_0)^T\right)$$
+Finally, this value of $\Delta^{-1}$ minimizes $(*)$, so \fbox{it's the optimal $\Sigma$}.\\
+\noindent $\bullet$ By Bayes' theorem, $$\begin{aligned}
+  P(y=1|x=a) &= \frac{f_{x|y=1}(a)f_y(1)}{f_X(a)}\\ &= \frac{\frac{\pi}{\sqrt{(2\pi)^d |\Sigma|}}\exp\left(-\frac 12 (a-\mu_1)^T\Sigma^{-1}(a-\mu_1) \right)}{\frac{\pi}{\sqrt{(2\pi)^d |\Sigma|}}\exp\left(-\frac 12 (a-\mu_1)^T\Sigma^{-1}(a-\mu_1) \right) + \frac{1-\pi}{\sqrt{(2\pi)^d |\Sigma|}}\exp\left(-\frac 12 (a-\mu_0)^T\Sigma^{-1}(a-\mu_0) \right)}\\
+  &= \sigma\left(a^T\Sigma^{-1}(\mu_1-\mu_0) + \frac12(\mu_1+\mu_0)^T\Sigma^{-1}(\mu_0-\mu_1)+\log \frac{\pi}{1-\pi}\right)
+\end{aligned}$$
+
+\section*{QDA}
+$\bullet$ The reasoning is very similar to that of LDA. Let $(y_1,x_1),\ldots,(y_n,x_n)$ be an i.i.d sample from $(y,x)$. The likelihood of the model is $$\begin{aligned}
+  L(\mu_0,\mu_1,\Sigma_0,\Sigma_1,\pi|y_i,x_i) = \frac{\pi^{n_1}(1-\pi)^{n-n_1}}{(2\pi)^{nd/2}|\Sigma_0|^{n_0/2}|\Sigma_1|^{n_1/2}}&\prod_{\substack{i\\y_i=1}} \pi\exp(-\frac12 (x_i-\mu_1)^T\Sigma_1^{-1}(x_i-\mu_1))\\&\prod_{\substack{i\\y_i=0}}(1-\pi)\exp(-\frac12 (x_i-\mu_0)^T\Sigma_0^{-1}(x_i-\mu_0))
+\end{aligned}$$
+$\bullet$ The log-likelihood consequently writes as $$
+\begin{aligned}[t]\ell(\mu_0,\mu_1,\Sigma_0,\Sigma_1,\pi&|y_i,x_i) = -\frac n2 \log((2\pi)^d)+ \color{red}{n_1\log \pi +(n-n_1)\log(1-\pi)}\\ &\color{blue}{-\frac {n_1}2 \log |\Sigma_1|-\frac {n_0}2 \log |\Sigma_0|  -\frac 12 \left( \sum_{\substack{i\\y_i=1}}(x_i-\mu_1)^T\Sigma^{-1}(x_i-\mu_1) + \sum_{\substack{i\\y_i=0}}(x_i-\mu_0)^T\Sigma^{-1}(x_i-\mu_0)\right)}\end{aligned}
+$$ which may be maximized separately in $\pi$ and $(\mu_0,\mu_1,\Sigma_0,\Sigma_1)$.\\
+$\bullet$ Exactly the same steps as in LDA may be reproduced, yielding $$\begin{cases}
+  \pi = \frac{n_1}n \\ \mu_1= \frac{1}{n_1}\sum_{i,y_i=1} x_i \\ \mu_0 = \frac{1}{n_0}\sum_{i,y_i=0} x_i\\
+  \Sigma_1 = \frac 1{n_1}\left(\sum_{i,y_i=1} (x_i-\mu_1)(x_i-\mu_1)^T \right)\\ \Sigma_0 = \frac 1{n_0}\left(\sum_{i,y_i=0} (x_i-\mu_0)(x_i-\mu_0)^T \right)
+\end{cases}$$
+\end{document}
